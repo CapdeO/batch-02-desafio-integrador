@@ -66,6 +66,7 @@ contract PublicSale is
         uint256 reserveIn = tokenUSDC.balanceOf(address(router));
         uint256 reserveOut = tokenBBTKN.balanceOf(address(router));
         uint256 USDCEstimado = router.getAmountIn(tokenAmount, reserveIn, reserveOut);
+        USDCEstimado = USDCEstimado / (10 ** (18 - 6));
         return USDCEstimado;
     }
 
@@ -174,7 +175,7 @@ contract PublicSale is
 
     function generateRandomNumber(uint256 minValue, uint256 maxValue) internal view returns (uint256) {
         uint256 randomNonce = uint256(
-            keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 
+            keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 
             (maxValue - minValue + 1) + minValue;
         return randomNonce;
     }
