@@ -1,17 +1,21 @@
 const { ethers, upgrades } = require("hardhat");
 
-// Address Contrato Proxy: 0x678FC0a2aeDDFB5C8CAEb9Fe66c04d2Ff9B8779e
+// Address Contrato Proxy: 0x740D08BE8D82440f9dcaD0d4a9E53e19376272BA
 
-// Address de Impl 1 es: 0xdADf53cEAbff7c4a490757EC6fFcbF5E174d7A9e
+// Address de Impl 1 es: 0x678FC0a2aeDDFB5C8CAEb9Fe66c04d2Ff9B8779e
 // Address de Impl 2 es: 
 
 async function main() {
     // obtener el codigo del contrato
-    var UpgradeableToken = await ethers.getContractFactory("BBitesToken");
+    var UpgradeableToken = await ethers.getContractFactory("CuyCollectionNft");
+
+    const name = "CuyCollection";
+    const symbol = "CUY";
+
     // publicar el proxy
     var upgradeableToken = await upgrades.deployProxy(
         UpgradeableToken, 
-        [], 
+        [name, symbol], 
         {kind: "uups"},
     );
     // esperar a que se confirme el contrato
