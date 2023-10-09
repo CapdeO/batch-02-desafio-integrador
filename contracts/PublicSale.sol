@@ -73,11 +73,12 @@ contract PublicSale is
     function purchaseWithUSDC(uint256 _id, uint256 _amountIn) external NFTChecks(_id, 0, 699) {
 
         uint256 tokenAmount = getPriceForId(_id);
-        uint256 contractBalanceUSDC = tokenUSDC.balanceOf(address(this));
 
         require(tokenUSDC.allowance(msg.sender, address(this)) >= tokenAmount, "Debe aprobar la cantidad de USDC necesaria.");
         
         require(tokenUSDC.transferFrom(msg.sender, address(this), _amountIn), "Error en la transferencia de USDC");
+
+        tokenUSDC.approve(routerAddress, _amountIn);
 
         address[] memory path = new address[](2);
         path[0] = address(tokenUSDC);
@@ -91,7 +92,7 @@ contract PublicSale is
             block.timestamp + 3600
         );
 
-        uint256 USDCExcess = contractBalanceUSDC - amounts[0];
+        uint256 USDCExcess = _amountIn - amounts[0];
 
         if (USDCExcess > 0) 
             require(tokenUSDC.transfer(msg.sender, USDCExcess), "Error en la devolucion de USDC");

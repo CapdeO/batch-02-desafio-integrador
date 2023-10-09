@@ -1,8 +1,8 @@
 const { ethers, upgrades } = require("hardhat");
 
-// Address Contrato Proxy: 0x2622F196CFC6C539b8781d51441d30Cc1e7c862c
+// Address Contrato Proxy: 0x678FC0a2aeDDFB5C8CAEb9Fe66c04d2Ff9B8779e
 
-// Address de Impl 1 es: 0x3bd9BaCF6bF54320Bc311a01F24FF69630f0CD2E
+// Address de Impl 1 es: 0xdADf53cEAbff7c4a490757EC6fFcbF5E174d7A9e
 // Address de Impl 2 es: 
 
 async function main() {
