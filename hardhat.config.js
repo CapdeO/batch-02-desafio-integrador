@@ -6,6 +6,10 @@ require("@openzeppelin/hardhat-upgrades");
 module.exports = {
   solidity: "0.8.19",
   networks: {
+    localhost: {
+      url: "http://127.0.0.1:8545",
+      chainId: 1337,
+    },
     mumbai: {
       url: process.env.MUMBAI_TESNET_URL,
       accounts: [process.env.PRIVATE_KEY],
