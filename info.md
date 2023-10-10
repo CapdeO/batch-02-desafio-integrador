@@ -10,4 +10,4 @@ Pool v2:            0x678FC0a2aeDDFB5C8CAEb9Fe66c04d2Ff9B8779e
 
 ------------------- Mumbai: -------------------
 
-CuyCollection:      
+CuyCollection:      0x740D08BE8D82440f9dcaD0d4a9E53e19376272BA
