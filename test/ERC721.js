@@ -90,15 +90,23 @@ describe("Testeando Contratos Inteligentes", () => {
                 contract.safeMint(owner.address, 0)
             ).to.be.revertedWith("Pausable: paused");
         });
-        
 
+        // it("Sin whitelist", async function () {
         
+        //     var { contract, alice } = await loadFixture(loadTestingOne);
         
+        //     // Crea una información incorrecta que no forme parte de la whitelist
+        //     const tokenId = 123; // Supongamos que este es el tokenId que quieres intentar mintear
+        //     const proofs = ["proof1", "proof2"]; // Supongamos que aquí tienes pruebas incorrectas
         
-          
-          
-
-
+        //     try {
+        //       await contract.safeMintWhiteList(alice.address, tokenId, proofs);
+        //       // Si el mint no revierte, debería lanzar una excepción
+        //     } catch (error) {
+        //       // Verifica que el error sea el esperado
+        //       expect(error.message).to.contain("No eres parte de la lista");
+        //     }
+        //   });
 
     });
 
