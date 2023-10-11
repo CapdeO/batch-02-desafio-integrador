@@ -1,11 +1,13 @@
 const { ethers, upgrades } = require("hardhat");
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { MerkleTree } = require("merkletreejs");
-const keccak256 = require("keccak256");
 
 const { getRole } = require("../utils");
 const { getRootFromMT, generateMerkleProof } = require("../utils/merkleTree");
+
+const MINTER_ROLE = getRole("MINTER_ROLE");
+const PAUSER_ROLE = getRole("PAUSER_ROLE");
+const UPGRADER_ROLE = getRole("UPGRADER_ROLE");
 
 describe("Testeando ERC721", () => {
     async function loadTestingOne() {
@@ -15,7 +17,7 @@ describe("Testeando ERC721", () => {
         var Contract = await ethers.getContractFactory("CuyCollectionNft");
 
         var contract = await upgrades.deployProxy(Contract, ["CuyCollectionNft", "CUY"], { initializer: 'initialize', kind: 'uups' });
-        //await contract.deployed();
+        
         return { contract, owner, alice, bob, carl };
     }
 
@@ -35,10 +37,6 @@ describe("Testeando ERC721", () => {
         it("Roles al desplegar - owner()", async () => {
 
             var { contract, owner } = await loadFixture(loadTestingOne);
-
-            var MINTER_ROLE = getRole("MINTER_ROLE");
-            var PAUSER_ROLE = getRole("PAUSER_ROLE");
-            var UPGRADER_ROLE = getRole("UPGRADER_ROLE");
 
             var hasMinterRole = await contract.hasRole(MINTER_ROLE, owner.address);
             expect(hasMinterRole).to.be.true;
@@ -65,8 +63,6 @@ describe("Testeando ERC721", () => {
 
         it("Minteando sin rol MINTER", async () => {
             var { contract, alice } = await loadFixture(loadTestingOne);
-
-            var MINTER_ROLE = getRole("MINTER_ROLE");
 
             var aliceMinuscula = alice.address.toLowerCase();
 
@@ -140,8 +136,6 @@ describe("Testeando ERC721", () => {
         it("Pausando sin rol PAUSER", async () => {
             var { contract, alice } = await loadFixture(loadTestingOne);
 
-            var PAUSER_ROLE = getRole("PAUSER_ROLE");
-
             var aliceMinuscula = alice.address.toLowerCase();
 
             await expect(
@@ -151,8 +145,6 @@ describe("Testeando ERC721", () => {
 
         it("Despausando sin rol PAUSER", async () => {
             var { contract, alice } = await loadFixture(loadTestingOne);
-
-            var PAUSER_ROLE = getRole("PAUSER_ROLE");
 
             var aliceMinuscula = alice.address.toLowerCase();
 
@@ -164,8 +156,6 @@ describe("Testeando ERC721", () => {
         it("Otorgando rol PAUSER", async () => {
             var { contract, bob } = await loadFixture(loadTestingOne);
 
-            var PAUSER_ROLE = getRole("PAUSER_ROLE");
-
             contract.grantRole(PAUSER_ROLE, bob.address);
 
             await expect(contract.connect(bob).pause());
@@ -173,8 +163,6 @@ describe("Testeando ERC721", () => {
 
         it("Revocando rol PAUSER", async () => {
             var { contract, bob } = await loadFixture(loadTestingOne);
-
-            var PAUSER_ROLE = getRole("PAUSER_ROLE");
 
             contract.grantRole(PAUSER_ROLE, bob.address);
 
