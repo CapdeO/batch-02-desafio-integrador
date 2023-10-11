@@ -13,9 +13,15 @@ function hashToken(tokenId, account) {
   );
 }
 
-function getRootFromMT() {
+function generateMerkleProof(tokenId, account) {
+  var elementHash = hashToken(tokenId, account); 
+  var proofs = merkleTree.getHexProof(elementHash);
+  return proofs;
+}
 
-  var elementosHasheados = walletAndIds.map(({ id, address }) => {
+function getRootFromMT(data) {
+
+  var elementosHasheados = data.map(({ id, address }) => {
     return hashToken(id, address);
   });
   merkleTree = new MerkleTree(elementosHasheados, keccak256, {
@@ -23,9 +29,10 @@ function getRootFromMT() {
   });
 
   root = merkleTree.getHexRoot();
-  console.log(root);
+  //console.log(root);
 
   return root;
 }
-getRootFromMT();
-module.exports = { getRootFromMT };
+//getRootFromMT();
+
+module.exports = { getRootFromMT, generateMerkleProof };

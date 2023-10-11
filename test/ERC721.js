@@ -5,6 +5,7 @@ const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
 
 const { getRole } = require("../utils");
+const { getRootFromMT, generateMerkleProof } = require("../utils/merkleTree");
 
 describe("Testeando ERC721", () => {
     async function loadTestingOne() {
@@ -86,7 +87,7 @@ describe("Testeando ERC721", () => {
         it("Minteando con contrato pausado", async () => {
             var { contract, owner } = await loadFixture(loadTestingOne);
 
-            await contract.pause({ from: owner.address });
+            await contract.pause();
 
             await expect(
                 contract.safeMint(owner.address, 0)
@@ -98,48 +99,14 @@ describe("Testeando ERC721", () => {
             var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
 
             var elements = [
-                {
-                    id: 1000,
-                    address: owner.address,
-                },
-                {
-                    id: 1001,
-                    address: alice.address,
-                },
-                {
-                    id: 1002,
-                    address: bob.address,
-                },
+                { id: 1000, address: owner.address, },
+                { id: 1001, address: alice.address, },
+                { id: 1002, address: bob.address, },
             ];
 
-            var merkleTree, root;
-            function hashToken(tokenId, account) {
-                return Buffer.from(
-                    ethers
-                        .solidityPackedKeccak256(["uint256", "address"], [tokenId, account])
-                        .slice(2),
-                    "hex"
-                );
-            }
-
-            var elementosHasheados = elements.map(({ id, address }) => {
-                return hashToken(id, address);
-            });
-            merkleTree = new MerkleTree(elementosHasheados, keccak256, {
-                sortPairs: true,
-            });
-
-            root = merkleTree.getHexRoot();
-
-            var root = merkleTree.getHexRoot();
+            var root = getRootFromMT(elements);
 
             await contract.actualizarRaiz(root);
-
-            function generateMerkleProof(tokenId, account) {
-                var elementHash = hashToken(tokenId, account); 
-                var proofs = merkleTree.getHexProof(elementHash);
-                return proofs;
-            }
 
             var aliceProofs = generateMerkleProof(1001, alice.address);
 
@@ -151,44 +118,13 @@ describe("Testeando ERC721", () => {
             var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
 
             var elements = [
-                {
-                    id: 1000,
-                    address: owner.address,
-                },
-                {
-                    id: 1001,
-                    address: alice.address,
-                },
+                { id: 1000, address: owner.address, },
+                { id: 1001, address: alice.address, },
             ];
 
-            var merkleTree, root;
-            function hashToken(tokenId, account) {
-                return Buffer.from(
-                    ethers
-                        .solidityPackedKeccak256(["uint256", "address"], [tokenId, account])
-                        .slice(2),
-                    "hex"
-                );
-            }
-
-            var elementosHasheados = elements.map(({ id, address }) => {
-                return hashToken(id, address);
-            });
-            merkleTree = new MerkleTree(elementosHasheados, keccak256, {
-                sortPairs: true,
-            });
-
-            root = merkleTree.getHexRoot();
-
-            var root = merkleTree.getHexRoot();
+            var root = getRootFromMT(elements);
 
             await contract.actualizarRaiz(root);
-
-            function generateMerkleProof(tokenId, account) {
-                var elementHash = hashToken(tokenId, account); 
-                var proofs = merkleTree.getHexProof(elementHash);
-                return proofs;
-            }
 
             var bobProofs = generateMerkleProof(1001, bob.address);
 
@@ -260,48 +196,14 @@ describe("Testeando ERC721", () => {
             var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
 
             var elements = [
-                {
-                    id: 1000,
-                    address: owner.address,
-                },
-                {
-                    id: 1001,
-                    address: alice.address,
-                },
-                {
-                    id: 1002,
-                    address: bob.address,
-                },
+                { id: 1000, address: owner.address, },
+                { id: 1001, address: alice.address, },
+                { id: 1002, address: bob.address, },
             ];
 
-            var merkleTree, root;
-            function hashToken(tokenId, account) {
-                return Buffer.from(
-                    ethers
-                        .solidityPackedKeccak256(["uint256", "address"], [tokenId, account])
-                        .slice(2),
-                    "hex"
-                );
-            }
-
-            var elementosHasheados = elements.map(({ id, address }) => {
-                return hashToken(id, address);
-            });
-            merkleTree = new MerkleTree(elementosHasheados, keccak256, {
-                sortPairs: true,
-            });
-
-            root = merkleTree.getHexRoot();
-
-            var root = merkleTree.getHexRoot();
+            var root = getRootFromMT(elements);
 
             await contract.actualizarRaiz(root);
-
-            function generateMerkleProof(tokenId, account) {
-                var elementHash = hashToken(tokenId, account); 
-                var proofs = merkleTree.getHexProof(elementHash);
-                return proofs;
-            }
 
             var aliceProofs = generateMerkleProof(1001, alice.address);
 
@@ -333,48 +235,14 @@ describe("Testeando ERC721", () => {
             var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
 
             var elements = [
-                {
-                    id: 1000,
-                    address: owner.address,
-                },
-                {
-                    id: 1001,
-                    address: alice.address,
-                },
-                {
-                    id: 1002,
-                    address: bob.address,
-                },
+                { id: 1000, address: owner.address, },
+                { id: 1001, address: alice.address, },
+                { id: 1002, address: bob.address, },
             ];
 
-            var merkleTree, root;
-            function hashToken(tokenId, account) {
-                return Buffer.from(
-                    ethers
-                        .solidityPackedKeccak256(["uint256", "address"], [tokenId, account])
-                        .slice(2),
-                    "hex"
-                );
-            }
-
-            var elementosHasheados = elements.map(({ id, address }) => {
-                return hashToken(id, address);
-            });
-            merkleTree = new MerkleTree(elementosHasheados, keccak256, {
-                sortPairs: true,
-            });
-
-            root = merkleTree.getHexRoot();
-
-            var root = merkleTree.getHexRoot();
+            var root = getRootFromMT(elements);
 
             await contract.actualizarRaiz(root);
-
-            function generateMerkleProof(tokenId, account) {
-                var elementHash = hashToken(tokenId, account); 
-                var proofs = merkleTree.getHexProof(elementHash);
-                return proofs;
-            }
 
             var aliceProofs = generateMerkleProof(1001, alice.address);
 
@@ -384,9 +252,6 @@ describe("Testeando ERC721", () => {
                 "ERC721: caller is not token owner or approved"
             );
         });
-        
-
-
 
     });
 
