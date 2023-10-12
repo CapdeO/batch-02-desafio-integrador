@@ -17,7 +17,7 @@ contract PublicSale is
     IUniSwapV2Router02 router;
     IERC20 tokenBBTKN;
     IERC20 tokenUSDC;
-    address routerAddress = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address routerAddress; // = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D; // ROUTER MAINNET Y TESTNETs
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
@@ -44,7 +44,9 @@ contract PublicSale is
         _disableInitializers();
     }
 
-    function initialize(address _addressBBTKN, address _addressUSDC) public initializer {
+    function initialize(address _addressBBTKN, address _addressUSDC, address _addressRouter) public initializer {
+        routerAddress = _addressRouter;
+        
         tokenBBTKN = IERC20(_addressBBTKN);
         tokenUSDC = IERC20(_addressUSDC);
         router = IUniSwapV2Router02(routerAddress);

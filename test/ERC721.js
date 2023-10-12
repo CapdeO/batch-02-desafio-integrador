@@ -10,7 +10,7 @@ const PAUSER_ROLE = getRole("PAUSER_ROLE");
 const UPGRADER_ROLE = getRole("UPGRADER_ROLE");
 
 describe("Testeando ERC721", () => {
-    async function loadTestingOne() {
+    async function loadTest() {
 
         var [owner, alice, bob, carl] = await ethers.getSigners();
 
@@ -24,7 +24,7 @@ describe("Testeando ERC721", () => {
     describe("Publicación", () => {
         it("Name y Symbol", async () => {
 
-            var { contract } = await loadFixture(loadTestingOne);
+            var { contract } = await loadFixture(loadTest);
 
             var name = "CuyCollectionNft";
             var symbol = "CUY";
@@ -36,7 +36,7 @@ describe("Testeando ERC721", () => {
 
         it("Roles al desplegar - owner()", async () => {
 
-            var { contract, owner } = await loadFixture(loadTestingOne);
+            var { contract, owner } = await loadFixture(loadTest);
 
             var hasMinterRole = await contract.hasRole(MINTER_ROLE, owner.address);
             expect(hasMinterRole).to.be.true;
@@ -53,7 +53,7 @@ describe("Testeando ERC721", () => {
 
     describe("Minteando", () => {
         it("Minteando Owner a Alice", async () => {
-            var { contract, alice } = await loadFixture(loadTestingOne);
+            var { contract, alice } = await loadFixture(loadTest);
 
             await contract.safeMint(alice.address, 0);
 
@@ -62,7 +62,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Minteando sin rol MINTER", async () => {
-            var { contract, alice } = await loadFixture(loadTestingOne);
+            var { contract, alice } = await loadFixture(loadTest);
 
             var aliceMinuscula = alice.address.toLowerCase();
 
@@ -72,7 +72,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Minteando tokenId fuera de rango", async () => {
-            var { contract, owner } = await loadFixture(loadTestingOne);
+            var { contract, owner } = await loadFixture(loadTest);
 
             var fueraDeRangoMal = 2222;
             await expect(
@@ -81,7 +81,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Minteando con contrato pausado", async () => {
-            var { contract, owner } = await loadFixture(loadTestingOne);
+            var { contract, owner } = await loadFixture(loadTest);
 
             await contract.pause();
 
@@ -92,7 +92,7 @@ describe("Testeando ERC721", () => {
 
         it("Minteando con whitelist", async function () {
 
-            var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
+            var { contract, owner, alice, bob } = await loadFixture(loadTest);
 
             var elements = [
                 { id: 1000, address: owner.address, },
@@ -111,7 +111,7 @@ describe("Testeando ERC721", () => {
 
         it("Minteando sin whitelist", async function () {
 
-            var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
+            var { contract, owner, alice, bob } = await loadFixture(loadTest);
 
             var elements = [
                 { id: 1000, address: owner.address, },
@@ -134,7 +134,7 @@ describe("Testeando ERC721", () => {
     describe("Modifier - onlyRole(PAUSER_ROLE)", () => {
 
         it("Pausando sin rol PAUSER", async () => {
-            var { contract, alice } = await loadFixture(loadTestingOne);
+            var { contract, alice } = await loadFixture(loadTest);
 
             var aliceMinuscula = alice.address.toLowerCase();
 
@@ -144,7 +144,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Despausando sin rol PAUSER", async () => {
-            var { contract, alice } = await loadFixture(loadTestingOne);
+            var { contract, alice } = await loadFixture(loadTest);
 
             var aliceMinuscula = alice.address.toLowerCase();
 
@@ -154,7 +154,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Otorgando rol PAUSER", async () => {
-            var { contract, bob } = await loadFixture(loadTestingOne);
+            var { contract, bob } = await loadFixture(loadTest);
 
             contract.grantRole(PAUSER_ROLE, bob.address);
 
@@ -162,7 +162,7 @@ describe("Testeando ERC721", () => {
         });
 
         it("Revocando rol PAUSER", async () => {
-            var { contract, bob } = await loadFixture(loadTestingOne);
+            var { contract, bob } = await loadFixture(loadTest);
 
             contract.grantRole(PAUSER_ROLE, bob.address);
 
@@ -181,7 +181,7 @@ describe("Testeando ERC721", () => {
 
         it("Quema de token", async () => {
 
-            var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
+            var { contract, owner, alice, bob } = await loadFixture(loadTest);
 
             var elements = [
                 { id: 1000, address: owner.address, },
@@ -205,7 +205,7 @@ describe("Testeando ERC721", () => {
         
         it("Quema de token fuera de rango", async () => {
 
-            var { contract, alice } = await loadFixture(loadTestingOne);
+            var { contract, alice } = await loadFixture(loadTest);
             var tokenId = 222;
         
             await contract.safeMint(alice.address, tokenId);
@@ -220,7 +220,7 @@ describe("Testeando ERC721", () => {
 
         it("Quema de token sin ser owner", async () => {
 
-            var { contract, owner, alice, bob } = await loadFixture(loadTestingOne);
+            var { contract, owner, alice, bob } = await loadFixture(loadTest);
 
             var elements = [
                 { id: 1000, address: owner.address, },
