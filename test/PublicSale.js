@@ -1,6 +1,6 @@
 var { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 var { expect } = require("chai");
-var { ethers } = require("hardhat");
+var { ethers, upgrades } = require("hardhat");
  
 const { getRole } = require("../utils");
 
@@ -25,14 +25,28 @@ describe("Testeando PublicSale", () => {
         var USDC = await ethers.getContractFactory("USDCoin");
         var usdc = await USDC.deploy();
 
-        // var ContractUniswapRouter = await ethers.getContractFactory("UniswapV2Router02");
-        // var ContractTokenBBTKN    = await ethers.getContractFactory("BBitesToken");
+        var BBTKN = await ethers.getContractFactory("BBitesToken");
+        var bbtkn = await upgrades.deployProxy(BBTKN, [], {kind: "uups"});
+
+        var createPair = await factory.createPair(bbtkn.target, usdc.target);
+        await createPair.wait();
+
+        var pairAddress = await factory.getPair(bbtkn.target, usdc.target);
+
+        //var reserves = await pairAddress.getReserves();
+
+        var wethAddress = '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419';
+
+        var Router = new ethers.ContractFactory(routerArtifact.abi, routerArtifact.bytecode, owner);
+        var router = await Router.deploy(factory.target, wethAddress);
+
+
         
         // var ContractPublicSale    = await ethers.getContractFactory("PublicSale");
 
         // var contract = await upgrades.deployProxy(ContractPublicSale, ["CuyCollectionNft", "CUY"], { initializer: 'initialize', kind: 'uups' });
         
-        return { factory, usdc, owner, alice, bob, carl };
+        return { factory, usdc, bbtkn, pairAddress, router, owner, alice, bob, carl };
 
 
     }
@@ -40,10 +54,17 @@ describe("Testeando PublicSale", () => {
     describe("Publicación", () => {
         it("Name y Symbol", async () => {
 
-            var { factory, usdc } = await loadFixture(loadTest);
+            var { factory, usdc, bbtkn, pairAddress, router, owner, alice } = await loadFixture(loadTest);
 
             console.log('Factory: ', factory.target);
             console.log('USDC: ', usdc.target);
+            console.log('BBTKN: ', bbtkn.target);
+            console.log('PairAddress: ', pairAddress);
+            console.log('RouterAddress: ', router.target);
+            
+
+
+
 
         });
 
