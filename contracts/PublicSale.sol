@@ -27,7 +27,7 @@ contract PublicSale is
     uint256 constant startDate = 1696032000;
 
     // Maximo price NFT
-    uint256 public MAX_PRICE_NFT = _amount(90000);
+    uint256 public MAX_PRICE_NFT;
 
     uint256[] public mintedNFTs;
 
@@ -50,6 +50,8 @@ contract PublicSale is
         tokenBBTKN = IERC20(_addressBBTKN);
         tokenUSDC = IERC20(_addressUSDC);
         router = IUniSwapV2Router02(routerAddress);
+
+        MAX_PRICE_NFT = _amount(90000);
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
@@ -174,6 +176,10 @@ contract PublicSale is
                 tokenAmount = MAX_PRICE_NFT;
         }
         return tokenAmount;
+    }
+
+    function getMintedNFTs() public view returns (uint256[] memory) {
+        return mintedNFTs;
     }
 
     function generateRandomNumber(uint256 minValue, uint256 maxValue) internal view returns (uint256) {

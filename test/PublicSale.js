@@ -18,36 +18,22 @@ var startDate = 1696032000;
 
 describe("Testeando PublicSale", () => {
     async function loadTest() {
-
         var [owner, alice, bob, carl] = await ethers.getSigners();
-
         var Factory = new ethers.ContractFactory(factoryArtifact.abi, factoryArtifact.bytecode, owner);
         var factory = await Factory.deploy(owner.address);
-
         var BBTKN = await ethers.getContractFactory("BBitesToken");
         var bbtkn = await upgrades.deployProxy(BBTKN, [], {kind: "uups"});
-
         var USDC = await ethers.getContractFactory("USDCoin");
         var usdc = await USDC.deploy();
-
-        var createPair = await factory.createPair(bbtkn.target, usdc.target);
-
-        var pairAddress = await factory.getPair(bbtkn.target, usdc.target);
-
-        var pair = new ethers.Contract(pairAddress, pairArtifact.abi, owner);
-        var reserves;
-
         var Weth = new ethers.ContractFactory(WETH9.abi, WETH9.bytecode, owner);
         var weth = await Weth.deploy();
-
+        await factory.createPair(bbtkn.target, usdc.target);
+        var pairAddress = await factory.getPair(bbtkn.target, usdc.target);
+        var pair = new ethers.Contract(pairAddress, pairArtifact.abi, owner);
         var Router = new ethers.ContractFactory(routerArtifact.abi, routerArtifact.bytecode, owner);
         var router = await Router.deploy(factory.target, weth.target);
-
         await bbtkn.approve(router, bbtkn.balanceOf(owner));
         await usdc.approve(router, usdc.balanceOf(owner));
-
-        var deadline = Math.floor(Date.now()/1000 + (10*60));
-
         await router.addLiquidity(
             bbtkn.target,
             usdc.target,
@@ -56,32 +42,50 @@ describe("Testeando PublicSale", () => {
             0,
             0,
             owner,
-            deadline
+            Math.floor(Date.now()/1000 + (10*60))
         )
-        reserves = await pair.getReserves();
-        //console.log('Reservas del Pool: ', reserves);
-        
-        // var ContractPublicSale    = await ethers.getContractFactory("PublicSale");
-
-        // var contract = await upgrades.deployProxy(ContractPublicSale, ["CuyCollectionNft", "CUY"], { initializer: 'initialize', kind: 'uups' });
-        
-        return { factory, bbtkn, usdc, router, owner, alice, bob, carl };
+        var ContractPublicSale = await ethers.getContractFactory("PublicSale");
+        var contractPublicSale = await upgrades.deployProxy(ContractPublicSale, [bbtkn.target, usdc.target, router.target], { initializer: 'initialize', kind: 'uups' });
+        return { bbtkn, usdc, contractPublicSale, owner, alice, bob, carl };
     }
 
-    describe("Publicación", () => {
-        it("Despliegues y Pool", async () => {
+    describe("purchaseWithTokens", () => {
+        it("Compra y evento", async () => {
+            var { bbtkn, contractPublicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 500;
+            var price = await contractPublicSale.getPriceForId(tokenId);
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(contractPublicSale.target, price);
 
-            var { factory, usdc, bbtkn, router, owner, alice } = await loadFixture(loadTest);
+            await expect(contractPublicSale.purchaseWithTokens(tokenId))
+                .to.emit(contractPublicSale, 'PurchaseNftWithId')
+                .withArgs(owner.address, tokenId);
 
-            //console.log('Factory: ', factory.target);
-            //console.log('USDC: ', usdc.target);
-            //console.log('BBTKN: ', bbtkn.target);
-            //console.log('RouterAddress: ', router.target);
-            
+            var mintedNFTs = await contractPublicSale.getMintedNFTs();
+            var mintedNFTsAsNumbers = mintedNFTs.map((item) => Number(item));
+            expect(mintedNFTsAsNumbers).to.include(tokenId);
+        });
 
+        it("Token ID fuera de rango", async () => {
+            var { contractPublicSale } = await loadFixture(loadTest);
+            var tokenId = 700;
 
+            await expect(
+                contractPublicSale.purchaseWithTokens(tokenId)
+            ).to.be.revertedWith("Token ID fuera de rango.");
+        });
 
+        it("Token ID ya existente", async () => {
+            var { bbtkn, contractPublicSale, owner, alice } = await loadFixture(loadTest);
+            var tokenId = 222;
+            var price = await contractPublicSale.getPriceForId(tokenId);
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(contractPublicSale.target, price);
+            await contractPublicSale.purchaseWithTokens(tokenId);
 
+            await expect(
+                contractPublicSale.connect(alice).purchaseWithTokens(tokenId)
+            ).to.be.revertedWith("Token ID ya existente.");
         });
 
     });
