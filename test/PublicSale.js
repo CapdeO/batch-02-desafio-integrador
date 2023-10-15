@@ -90,5 +90,46 @@ describe("Testeando PublicSale", () => {
 
     });
 
+    describe("purchaseWithUSDC", () => {
+        it("Compra y evento", async () => {
+            var { bbtkn, contractPublicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 500;
+            var price = await contractPublicSale.getPriceForId(tokenId);
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(contractPublicSale.target, price);
+
+            await expect(contractPublicSale.purchaseWithTokens(tokenId))
+                .to.emit(contractPublicSale, 'PurchaseNftWithId')
+                .withArgs(owner.address, tokenId);
+
+            var mintedNFTs = await contractPublicSale.getMintedNFTs();
+            var mintedNFTsAsNumbers = mintedNFTs.map((item) => Number(item));
+            expect(mintedNFTsAsNumbers).to.include(tokenId);
+        });
+
+        it("Token ID fuera de rango", async () => {
+            var { contractPublicSale } = await loadFixture(loadTest);
+            var tokenId = 700;
+
+            await expect(
+                contractPublicSale.purchaseWithTokens(tokenId)
+            ).to.be.revertedWith("Token ID fuera de rango.");
+        });
+
+        it("Token ID ya existente", async () => {
+            var { bbtkn, contractPublicSale, owner, alice } = await loadFixture(loadTest);
+            var tokenId = 222;
+            var price = await contractPublicSale.getPriceForId(tokenId);
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(contractPublicSale.target, price);
+            await contractPublicSale.purchaseWithTokens(tokenId);
+
+            await expect(
+                contractPublicSale.connect(alice).purchaseWithTokens(tokenId)
+            ).to.be.revertedWith("Token ID ya existente.");
+        });
+
+    });
+
 
 });
