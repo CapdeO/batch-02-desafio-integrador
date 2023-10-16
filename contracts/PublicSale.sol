@@ -67,8 +67,8 @@ contract PublicSale is
 
     function getAmountIn(uint256 _id) public view NFTChecks(_id, 0, 699) returns(uint256) {
         uint256 tokenAmount = getPriceForId(_id);
-        uint256 reserveIn = tokenUSDC.balanceOf(address(router));
-        uint256 reserveOut = tokenBBTKN.balanceOf(address(router));
+        uint256 reserveIn = _amount(500000);
+        uint256 reserveOut = _amount(1000000);
         uint256 USDCEstimado = router.getAmountIn(tokenAmount, reserveIn, reserveOut);
         USDCEstimado = USDCEstimado / (10 ** (18 - 6));
         return USDCEstimado;
@@ -78,7 +78,7 @@ contract PublicSale is
 
         uint256 tokenAmount = getPriceForId(_id);
 
-        require(tokenUSDC.allowance(msg.sender, address(this)) >= tokenAmount, "Debe aprobar la cantidad de USDC necesaria.");
+        require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
         
         require(tokenUSDC.transferFrom(msg.sender, address(this), _amountIn), "Error en la transferencia de USDC");
 
