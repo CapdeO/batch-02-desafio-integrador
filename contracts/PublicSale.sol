@@ -78,7 +78,7 @@ contract PublicSale is
 
         uint256 tokenAmount = getPriceForId(_id);
 
-        //require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
+        require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
         
         require(tokenUSDC.transferFrom(msg.sender, address(this), _amountIn), "Error en la transferencia de USDC");
 
