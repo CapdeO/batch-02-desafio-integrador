@@ -78,7 +78,7 @@ contract PublicSale is
 
         uint256 tokenAmount = getPriceForId(_id);
 
-        require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
+        //require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
         
         require(tokenUSDC.transferFrom(msg.sender, address(this), _amountIn), "Error en la transferencia de USDC");
 
@@ -89,8 +89,8 @@ contract PublicSale is
         path[1] = address(tokenBBTKN);
 
         uint[] memory amounts = router.swapTokensForExactTokens(
-            tokenAmount, 
             _amountIn, 
+            tokenAmount,
             path, 
             address(this), 
             block.timestamp + 3600
