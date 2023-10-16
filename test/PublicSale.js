@@ -126,8 +126,8 @@ describe("Testeando PublicSale", () => {
 
             var path = [usdc.target, bbtkn.target];
 
-            console.log('saldo en USDC: ', await usdc.balanceOf(owner))
-            console.log('saldo en BBTKN: ', await bbtkn.balanceOf(owner))
+            await showBalance(usdc, owner.address)
+            await showBalance(bbtkn, owner.address)
             reserves = await pair.getReserves();
             console.log('Reserves: ', reserves)
             
@@ -139,8 +139,8 @@ describe("Testeando PublicSale", () => {
                 90000000000
             );
             console.log('---- SWAP ----')
-            console.log('saldo en USDC: ', await usdc.balanceOf(owner))
-            console.log('saldo en BBTKN: ', await bbtkn.balanceOf(owner))
+            await showBalance(usdc, owner.address)
+            await showBalance(bbtkn, owner.address)
             reserves = await pair.getReserves();
             console.log('Reserves: ', reserves)
             
@@ -153,18 +153,30 @@ describe("Testeando PublicSale", () => {
             );
 
             console.log('---- SWAP ----')
-            console.log('saldo en USDC: ', await usdc.balanceOf(owner))
-            console.log('saldo en BBTKN: ', await bbtkn.balanceOf(owner))
-            reserves = await pair.getReserves();
-            console.log('Reserves: ', reserves)
+            await showBalance(usdc, owner.address)
+            await showBalance(bbtkn, owner.address)
+            showReserves(pair)
 
         });
 
-        async function loadTest() {
-            
+        // -----------------------------------------------------------------------------------
 
+        async function showBalance(token, address) {
+            var balance = await token.balanceOf(address)
+            var name = await token.name()
+            var decimals = await token.decimals()
 
-            
+            const balanceString = ethers.formatUnits(balance, decimals);
+
+            // Agrega una coma para representar los decimales
+            const balanceWithComma = balanceString.replace(/(\d)(?=(\d{3})+(\.\d+)?$)/g, "$1,");
+
+            console.log(`Balance en ${name}: ${balanceWithComma}`);
+        }
+
+        async function showReserves(pair) {
+            var reserves = await pair.getReserves()
+            console.log('Pool BBTKN/USDC -> ', reserves[0], '/', reserves[1])
         }
 
     });
