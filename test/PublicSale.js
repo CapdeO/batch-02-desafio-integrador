@@ -92,45 +92,36 @@ describe("Testeando PublicSale", () => {
 
     describe("purchaseWithUSDC", () => {
         it("Compra y evento", async () => {
-            var { usdc, publicSale, pair, owner } = await loadFixture(loadTest);
+            var { usdc, bbtkn, publicSale, pair, owner } = await loadFixture(loadTest);
             var tokenId = 0;
-            await usdc.mint(owner, 20000000000);
             var priceUSDC =  await publicSale.getAmountIn(tokenId);
-            //var priceUSDC =  500000000000;
-
-            
+            var priceUSDC = 503000000
+            await usdc.mint(owner.address, priceUSDC)
             await usdc.approve(publicSale.target, priceUSDC);
-            var reserves = await pair.getReserves();
 
-            // console.log('priceUSDC: ', priceUSDC);
-            
-            // var saldoOwnerUSDC = await usdc.balanceOf(owner.address);
-            // console.log('saldoOwner: ', saldoOwnerUSDC);
+            var getMintedNFTs = await publicSale.getMintedNFTs()
+            console.log(getMintedNFTs)
 
-            // var allowance = await usdc.allowance(owner.address, publicSale.target);
-            // console.log('allowance: ', allowance);
+            showBalance(usdc, owner.address)
+            await publicSale.purchaseWithUSDC(tokenId, priceUSDC)
+            showBalance(usdc, owner.address)
+            getMintedNFTs = await publicSale.getMintedNFTs()
+            console.log(getMintedNFTs)
 
 
-            // console.log(reserves);
-            //await publicSale.purchaseWithUSDC(tokenId, 2000000000);
-            // console.log(reserves);
         });
 
         it("Swap", async () => {
             var { usdc, bbtkn, pair, router, owner } = await loadFixture(loadTest);
             var reserves;
-            var cantidad = "2000000000"; // 2000 USDC
-            var cantidadRecibir = "1000000000000000000"; // 1 BBTKN
+            var cantidad = "2000000000";
+            var cantidadRecibir = "5000000000000000000";
             await usdc.mint(owner, cantidad);
             await usdc.approve(router.target, cantidad);
-
             var path = [usdc.target, bbtkn.target];
-
-            await showBalance(usdc, owner.address)
-            await showBalance(bbtkn, owner.address)
-            reserves = await pair.getReserves();
-            console.log('Reserves: ', reserves)
-            
+            // await showBalance(usdc, owner.address)
+            // await showBalance(bbtkn, owner.address)
+            // showReserves(pair)
             await router.swapTokensForExactTokens(
                 cantidadRecibir,
                 cantidad,
@@ -138,12 +129,10 @@ describe("Testeando PublicSale", () => {
                 owner.address,
                 90000000000
             );
-            console.log('---- SWAP ----')
-            await showBalance(usdc, owner.address)
-            await showBalance(bbtkn, owner.address)
-            reserves = await pair.getReserves();
-            console.log('Reserves: ', reserves)
-            
+            // console.log('---- SWAP ----')
+            // await showBalance(usdc, owner.address)
+            // await showBalance(bbtkn, owner.address)
+            // showReserves(pair)
             await router.swapTokensForExactTokens(
                 cantidadRecibir,
                 cantidad,
@@ -151,32 +140,35 @@ describe("Testeando PublicSale", () => {
                 owner.address,
                 90000000000
             );
-
-            console.log('---- SWAP ----')
-            await showBalance(usdc, owner.address)
-            await showBalance(bbtkn, owner.address)
-            showReserves(pair)
+            // console.log('---- SWAP ----')
+            // await showBalance(usdc, owner.address)
+            // await showBalance(bbtkn, owner.address)
+            // showReserves(pair)
 
         });
 
+        // -----------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------
 
         async function showBalance(token, address) {
             var balance = await token.balanceOf(address)
             var name = await token.name()
             var decimals = await token.decimals()
-
             const balanceString = ethers.formatUnits(balance, decimals);
-
-            // Agrega una coma para representar los decimales
             const balanceWithComma = balanceString.replace(/(\d)(?=(\d{3})+(\.\d+)?$)/g, "$1,");
-
             console.log(`Balance en ${name}: ${balanceWithComma}`);
         }
 
         async function showReserves(pair) {
             var reserves = await pair.getReserves()
-            console.log('Pool BBTKN/USDC -> ', reserves[0], '/', reserves[1])
+            var reserve0 = reserves[0]
+            reserve0 = ethers.formatUnits(reserve0, 18);
+            reserve0 = reserve0.replace(/(\d)(?=(\d{3})+(\.\d+)?$)/g, "$1,");
+            var reserve1 = reserves[1]
+            reserve1 = ethers.formatUnits(reserve1, 6);
+            reserve1 = reserve1.replace(/(\d)(?=(\d{3})+(\.\d+)?$)/g, "$1,");
+            console.log(`Pool BBTKN/USDC ->  ${reserve0} / ${reserve1}`)
         }
 
     });

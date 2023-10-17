@@ -78,9 +78,11 @@ contract PublicSale is
 
         uint256 tokenAmount = getPriceForId(_id);
 
-        require(tokenUSDC.allowance(msg.sender, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
+        address buyer = msg.sender;
+
+        require(tokenUSDC.allowance(buyer, address(this)) >= _amountIn, "Debe aprobar la cantidad de USDC necesaria.");
         
-        require(tokenUSDC.transferFrom(msg.sender, address(this), _amountIn), "Error en la transferencia de USDC");
+        require(tokenUSDC.transferFrom(buyer, address(this), _amountIn), "Error en la transferencia de USDC");
 
         tokenUSDC.approve(routerAddress, _amountIn);
 
@@ -89,8 +91,8 @@ contract PublicSale is
         path[1] = address(tokenBBTKN);
 
         uint[] memory amounts = router.swapTokensForExactTokens(
-            _amountIn, 
             tokenAmount,
+            _amountIn,
             path, 
             address(this), 
             block.timestamp + 3600
@@ -99,10 +101,10 @@ contract PublicSale is
         uint256 USDCExcess = _amountIn - amounts[0];
 
         if (USDCExcess > 0) 
-            require(tokenUSDC.transfer(msg.sender, USDCExcess), "Error en la devolucion de USDC");
+            require(tokenUSDC.transfer(buyer, USDCExcess), "Error en la devolucion de USDC");
         
         mintedNFTs.push(_id);
-        emit PurchaseNftWithId(msg.sender, _id);
+        emit PurchaseNftWithId(buyer, _id);
     }
 
     function purchaseWithEtherAndId(uint256 _id) public payable NFTChecks(_id, 700, 999) {
