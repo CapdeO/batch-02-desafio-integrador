@@ -70,6 +70,7 @@ contract PublicSale is
         uint256 reserveIn = _amount(500000);
         uint256 reserveOut = _amount(1000000);
         uint256 USDCEstimado = router.getAmountIn(tokenAmount, reserveIn, reserveOut);
+        USDCEstimado = (USDCEstimado * 1005) / 1000; // Aumento un 0.5% para evitar EXCESSIVE_INPUT_AMOUNT
         USDCEstimado = USDCEstimado / (10 ** (18 - 6));
         return USDCEstimado;
     }
