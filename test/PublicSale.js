@@ -9,6 +9,7 @@ const routerArtifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.js
 const pairArtifact = require('@uniswap/v2-periphery/build/IUniswapV2Pair.json');
 
 const WETH9 = require('../WETH9.json');
+const { any } = require("hardhat/internal/core/params/argumentTypes");
 
 const MINTER_ROLE = getRole("MINTER_ROLE");
 const BURNER_ROLE = getRole("BURNER_ROLE");
@@ -92,7 +93,7 @@ describe("Testeando PublicSale", () => {
 
     describe("purchaseWithUSDC", () => {
         it("Compra y evento", async () => {
-            var { usdc, bbtkn, publicSale, pair, owner } = await loadFixture(loadTest);
+            var { usdc, publicSale, owner } = await loadFixture(loadTest);
             var tokenId = 600;
             var priceUSDC = await publicSale.getAmountIn(tokenId);
             await usdc.mint(owner.address, priceUSDC)
@@ -105,14 +106,21 @@ describe("Testeando PublicSale", () => {
             var mintedNFTs = await publicSale.getMintedNFTs();
             var mintedNFTsAsNumbers = mintedNFTs.map((item) => Number(item));
             expect(mintedNFTsAsNumbers).to.include(tokenId);
-
         });
 
+        it("Devolucion de USDC", async () => {
+            var { usdc, publicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 0;
+            var priceUSDC = await publicSale.getAmountIn(tokenId);
+            var moreUSDC = BigInt(500000000)
+            var priceUSDCExcessive = priceUSDC + moreUSDC
+            await usdc.mint(owner.address, priceUSDCExcessive)
+            await usdc.approve(publicSale.target, priceUSDCExcessive);
+            await publicSale.purchaseWithUSDC(tokenId, priceUSDCExcessive)
 
-
-
-
-
+            var balanceAfterBuy = await usdc.balanceOf(owner.address)
+            expect(balanceAfterBuy).to.be.at.least(moreUSDC);
+        });
 
         // it("Swap", async () => {
         //     var { usdc, bbtkn, pair, router, owner } = await loadFixture(loadTest);
@@ -149,6 +157,89 @@ describe("Testeando PublicSale", () => {
         //     showReserves(pair)
 
         // });
+
+    });
+
+    describe("purchaseWithEtherAndId", () => {
+        it("Compra y evento", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 700
+            var etherValue = "10000000000000000"
+
+            await expect(publicSale.purchaseWithEtherAndId(tokenId, { value: etherValue}))
+                .to.emit(publicSale, 'PurchaseNftWithId')
+                .withArgs(owner.address, tokenId);
+
+            var mintedNFTs = await publicSale.getMintedNFTs();
+            var mintedNFTsAsNumbers = mintedNFTs.map((item) => Number(item));
+            expect(mintedNFTsAsNumbers).to.include(tokenId);
+        });
+
+        it("Menor msg.value", async () => {
+            var { usdc, bbtkn, publicSale, pair, owner } = await loadFixture(loadTest);
+            var tokenId = 700
+            var etherValue = "9000000000000000"
+
+            await expect(
+                    publicSale.purchaseWithEtherAndId(tokenId, { value: etherValue})
+                ).to.be.revertedWith("Se debe enviar 0.01 ether.")
+        });
+
+        it("Token ID fuera de rango", async () => {
+            var { publicSale } = await loadFixture(loadTest);
+            var tokenId = 699
+            var etherValue = "9000000000000000"
+
+            await expect(
+                    publicSale.purchaseWithEtherAndId(tokenId, { value: etherValue})
+                ).to.be.revertedWith("Token ID fuera de rango.");
+        });
+
+        it("Devolucion de ether", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 999
+            var etherValue = "3000000000000000000" // 3 ETH
+            var priceAndGas =  "10100000000000000"
+            var initialBalance = await ethers.provider.getBalance(owner.address)
+
+            await publicSale.purchaseWithEtherAndId(tokenId, { value: etherValue})
+
+            var newBalance = await ethers.provider.getBalance(owner.address)
+            var shouldBe = initialBalance - BigInt(priceAndGas)
+
+            expect(newBalance).to.be.at.least(shouldBe)
+        });
+
+
+    });
+
+    describe("depositEthForARandomNft", () => {
+        it("Envío, compra y evento", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var etherValue = "10000000000000000"
+
+            var initialBalanceContract = await ethers.provider.getBalance(publicSale.target)
+            console.log(initialBalanceContract)
+
+            const tx = {
+                to: publicSale,
+                value: etherValue,
+            };
+
+            var transferTx = await owner.sendTransaction(tx)
+            var result = await transferTx.wait();
+
+            // STACKOVERFLOW!!
+            // const transferTx = await token.connect(bob.address).transfer(alice.address, 10);
+            // const result = await transferTx.wait();
+            // expect(result.events[0].args._from).to.equal(bob.address);
+            // expect(result.events[0].args._to).to.equal(alice.address);
+            // expect(result.events[0].args._value).to.equal(10);
+
+            // await expect(owner.sendTransaction(tx))
+            //     .to.emit(publicSale, 'PurchaseNftWithId');
+
+        });
 
     });
 
