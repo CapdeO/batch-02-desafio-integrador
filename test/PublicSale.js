@@ -229,6 +229,10 @@ describe("Testeando PublicSale", () => {
             var transferTx = await owner.sendTransaction(tx)
             var result = await transferTx.wait();
 
+
+            initialBalanceContract = await ethers.provider.getBalance(publicSale.target)
+            console.log(initialBalanceContract)
+
             // STACKOVERFLOW!!
             // const transferTx = await token.connect(bob.address).transfer(alice.address, 10);
             // const result = await transferTx.wait();
