@@ -1,18 +1,12 @@
-var { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+var { loadFixture, time } = require("@nomicfoundation/hardhat-network-helpers");
 var { expect } = require("chai");
 var { ethers, upgrades } = require("hardhat");
-
-const { getRole } = require("../utils");
 
 const factoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const routerArtifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const pairArtifact = require('@uniswap/v2-periphery/build/IUniswapV2Pair.json');
 
 const WETH9 = require('../WETH9.json');
-const { any } = require("hardhat/internal/core/params/argumentTypes");
-
-const MINTER_ROLE = getRole("MINTER_ROLE");
-const BURNER_ROLE = getRole("BURNER_ROLE");
 
 // 00 horas del 30 de septiembre del 2023 GMT
 var startDate = 1696032000;
@@ -87,6 +81,46 @@ describe("Testeando PublicSale", () => {
             await expect(
                 publicSale.connect(alice).purchaseWithTokens(tokenId)
             ).to.be.revertedWith("Token ID ya existente.");
+        });
+
+        it("Compra de Tipo Comun", async () => {
+            var { bbtkn, publicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 100;
+            var price = await publicSale.getPriceForId(tokenId);
+            var shouldBe = "1000000000000000000000";
+            expect(price).to.be.equal(shouldBe)
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(publicSale.target, price);
+            await publicSale.purchaseWithTokens(tokenId);
+            expect(await bbtkn.balanceOf(owner.address)).to.be.equal(0)
+        });
+
+        it("Compra de Tipo Raro", async () => {
+            var { bbtkn, publicSale, owner } = await loadFixture(loadTest);
+            var tokenId = 200;
+            var price = await publicSale.getPriceForId(tokenId);
+            var shouldBe = "4000000000000000000000";
+            expect(price).to.be.equal(shouldBe)
+            await bbtkn.mint(owner, price);
+            await bbtkn.approve(publicSale.target, price);
+            await publicSale.purchaseWithTokens(tokenId);
+            expect(await bbtkn.balanceOf(owner.address)).to.be.equal(0)
+        });
+
+        it("Compra de Tipo Legendario", async () => {
+            var { publicSale } = await loadFixture(loadTest);
+            var tokenId = 699;
+            var currentTime = await time.latest();
+            var secondsPerDay = 86400;
+            var daysPassed = Math.floor((currentTime - startDate) / secondsPerDay);
+            var tokensPerDay = 2000000000000000000000
+            var initialTokens = 10000000000000000000000
+            var shouldBe = tokensPerDay * daysPassed + initialTokens;
+            shouldBe = BigInt(shouldBe)
+            shouldBe = shouldBe / (10n ** 18n);
+            var price = await publicSale.getPriceForId(tokenId);
+            price = price / (10n ** 18n)
+            expect(price).to.be.equal(shouldBe)
         });
 
     });
