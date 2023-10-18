@@ -218,33 +218,90 @@ describe("Testeando PublicSale", () => {
             var { publicSale, owner } = await loadFixture(loadTest);
             var etherValue = "10000000000000000"
 
-            var initialBalanceContract = await ethers.provider.getBalance(publicSale.target)
-            console.log(initialBalanceContract)
+            const tx = {
+                to: publicSale,
+                value: etherValue,
+            };
+            var transferTx = await owner.sendTransaction(tx)
+            await transferTx.wait()
+            var events = await publicSale.queryFilter(publicSale.filters.PurchaseNftWithId())
+            expect(events.length).to.equal(1)
+            var eventData = events[0].args
+            var account = eventData[0]
+            expect(account).to.be.equal(owner.address)
+        });
+
+        it("Menor msg.value", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var etherValue = "1000000000000000"
 
             const tx = {
                 to: publicSale,
                 value: etherValue,
             };
-
-            var transferTx = await owner.sendTransaction(tx)
-            var result = await transferTx.wait();
-
-
-            initialBalanceContract = await ethers.provider.getBalance(publicSale.target)
-            console.log(initialBalanceContract)
-
-            // STACKOVERFLOW!!
-            // const transferTx = await token.connect(bob.address).transfer(alice.address, 10);
-            // const result = await transferTx.wait();
-            // expect(result.events[0].args._from).to.equal(bob.address);
-            // expect(result.events[0].args._to).to.equal(alice.address);
-            // expect(result.events[0].args._value).to.equal(10);
-
-            // await expect(owner.sendTransaction(tx))
-            //     .to.emit(publicSale, 'PurchaseNftWithId');
-
+            await expect(
+                owner.sendTransaction(tx)
+            ).to.be.revertedWith("Se debe enviar 0.01 ether.")
         });
 
+        it("Devolucion de ether", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var etherValue = "3000000000000000000" // 3 ETH
+            var priceAndGas =  "10200000000000000"
+            var initialBalance = await ethers.provider.getBalance(owner.address)
+
+            const tx = {
+                to: publicSale,
+                value: etherValue,
+            };
+            await owner.sendTransaction(tx)
+            var newBalance = await ethers.provider.getBalance(owner.address)
+            var shouldBe = initialBalance - BigInt(priceAndGas)
+            expect(newBalance).to.be.at.least(shouldBe)
+        });
+
+    });
+
+    describe("withdrawEther", () => {
+        it("Retirando ether", async () => {
+            var { publicSale, owner } = await loadFixture(loadTest);
+            var etherValue = "10000000000000000"
+            const tx = {
+                to: publicSale,
+                value: etherValue,
+            };
+            await owner.sendTransaction(tx)
+            expect(await ethers.provider.getBalance(publicSale.target)).to.be.equal(etherValue)
+            await publicSale.withdrawEther()
+            expect(await ethers.provider.getBalance(publicSale.target)).to.be.equal(0)
+        });
+
+        it("Contrato sin ether", async () => {
+            var { publicSale } = await loadFixture(loadTest);
+            await expect(
+                publicSale.withdrawEther()
+            ).to.be.revertedWith("Contrato sin ether.")
+        });
+    });
+
+    describe("withdrawTokens", () => {
+        it("Retirando BBTKN", async () => {
+            var { bbtkn, publicSale, owner } = await loadFixture(loadTest);
+            let tokenAmount = "1000000000000000000"
+            await bbtkn.mint(owner, tokenAmount)
+            await bbtkn.transfer(publicSale.target, tokenAmount)
+            expect(await bbtkn.balanceOf(publicSale.target)).to.be.equal(tokenAmount)
+            await publicSale.withdrawTokens()
+            expect(await bbtkn.balanceOf(publicSale.target)).to.be.equal(0)
+            expect(await bbtkn.balanceOf(owner.address)).to.be.equal(tokenAmount)
+        });
+
+        it("Contrato sin BBTKN", async () => {
+            var { publicSale } = await loadFixture(loadTest);
+            await expect(
+                publicSale.withdrawTokens()
+            ).to.be.revertedWith("Contrato sin BBTKN.")
+        });
     });
 
     // -----------------------------------------------------------------------------------

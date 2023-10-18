@@ -30,6 +30,7 @@ contract PublicSale is
     uint256 public MAX_PRICE_NFT;
 
     uint256[] public mintedNFTs;
+    bool private allTokensMinted;
 
     modifier NFTChecks(uint256 _id, uint256 _min, uint256 _max) {
         require(_id >= _min && _id <= _max, "Token ID fuera de rango.");
@@ -118,9 +119,10 @@ contract PublicSale is
         emit PurchaseNftWithId(msg.sender, _id);
     }
 
-    function depositEthForARandomNft() public payable returns(bool result, uint256 id) {
+    function depositEthForARandomNft() public payable {
         uint256 price = 10000000000000000;
         require(msg.value >= price, "Se debe enviar 0.01 ether.");
+        require(!allTokensMinted, "Todos los NFTs Misticos han sido minteados.");
         uint256 _id;
         bool minted;
         
@@ -129,8 +131,6 @@ contract PublicSale is
                 
             if (!checkMintedNFT(randomNumber)) {
                 _id = randomNumber;
-                mintedNFTs.push(_id);
-                emit PurchaseNftWithId(msg.sender, _id);
                 minted = true;
                 break;
             }
@@ -141,12 +141,12 @@ contract PublicSale is
                 uint256 vuelto = msg.value - price;
                 payable(msg.sender).transfer(vuelto);
             }
-            return (true, _id);
+            mintedNFTs.push(_id);
+            emit PurchaseNftWithId(msg.sender, _id);
         } else {
             payable(msg.sender).transfer(msg.value);
-            return (false, _id);
+            allTokensMinted = true;
         }
-            
     }
 
     receive() external payable {
