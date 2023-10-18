@@ -5,7 +5,7 @@ const { ethers, upgrades } = require("hardhat");
 // Address de Impl 1 es: 0xdADf53cEAbff7c4a490757EC6fFcbF5E174d7A9e
 // Address de Impl 2 es: 
 
-async function main() {
+async function deployBBTKN() {
     // obtener el codigo del contrato
     var UpgradeableToken = await ethers.getContractFactory("BBitesToken");
     // publicar el proxy
@@ -49,12 +49,9 @@ async function upgrade() {
     });
 }
 
-main().catch((error) => {
-    console.log(error);
-    process.exitCode = 1;
-});
-
-// upgrade().catch((error) => {
+// deployBBTKN().catch((error) => {
 //     console.log(error);
 //     process.exitCode = 1;
 // });
+
+module.exports = { deployBBTKN };

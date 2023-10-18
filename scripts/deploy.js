@@ -1,13 +1,6 @@
 require("dotenv").config();
 
-const {
-  getRole,
-  verify,
-  ex,
-  printAddress,
-  deploySC,
-  deploySCNoUp,
-} = require("../utils");
+const { getRole, verify } = require("../utils");
 
 const { getRootFromMT } = require("../utils/merkleTree");
 
@@ -17,8 +10,7 @@ var BURNER_ROLE = getRole("BURNER_ROLE");
 // Publicar NFT en Mumbai
 async function deployMumbai() {
   var relAddMumbai; // relayer mumbai
-  var name = "Chose a name";
-  var symbol = "Chose a symbol";
+  
 
   // utiliza deploySC
   // utiliza printAddress
@@ -47,8 +39,8 @@ async function deployGoerli() {
   // script para verificacion del contrato
 }
 
-deployMumbai()
-  // deployGoerli()
+//deployMumbai()
+  deployGoerli()
   //
   .catch((error) => {
     console.error(error);
