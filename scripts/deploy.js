@@ -1,15 +1,16 @@
 require("dotenv").config();
 
+const { getRootFromMT } = require("../utils/merkleTree");
+const walletAndIds = require("../wallets/walletList");
+
 const {
   getRole,
   verify,
-  ex,
   printAddress,
   deploySC,
   deploySCNoUp,
 } = require("../utils");
 
-const { getRootFromMT } = require("../utils/merkleTree");
 const factoryArtifact = require('@uniswap/v2-core/build/UniswapV2Factory.json');
 const routerArtifact = require('@uniswap/v2-periphery/build/UniswapV2Router02.json');
 const pairArtifact = require('@uniswap/v2-periphery/build/IUniswapV2Pair.json');
@@ -39,7 +40,7 @@ var addressPublicSaleImpl;
 
 // Publicar NFT en Mumbai
 async function Mumbai() {
-  var relAddMumbai; // relayer mumbai
+  var relayerMumbai = '0xAEAC9114F74684402Bee91F88819333acCAfD2B2'
 
   // let name = "CuyCollection";
   // let symbol = "CUY";
@@ -49,15 +50,23 @@ async function Mumbai() {
 
   // await verify(addressCuyImpl, "CuyCollectionNft", [])
 
-  addressCuyProxy = '0xEF6B0853851986f27b3D75Fc450d6aD252BE7B49'
-  addressCuyImpl  = '0x4C18ea1F6fE4787EdEfc3AEA790dd0dAD0974132'
+  addressCuyProxy = '0x8849C99c351DC5950c991Fb552662b3dc3e91474'
+  addressCuyImpl  = '0x678FC0a2aeDDFB5C8CAEb9Fe66c04d2Ff9B8779e'
 
   contractCuy = await ethers.getContractAt("CuyCollectionNft", addressCuyProxy)
+
+  //await contractCuy.grantRole(MINTER_ROLE, relayerMumbai)
+
+  var root = getRootFromMT(walletAndIds);
+  console.log(root)
+  //await contractCuy.actualizarRaiz(root)
+  var rootContract = await contractCuy.root()
+  console.log(rootContract)
 
 }
 
 async function Goerli() {
-  // var relAddGoerli; // relayer goerli
+  var relAddGoerli = '0x4dAbe6D8C8a8146A501D29A8e9F4283D24Af3A06'
 
   // -------------------------------------------------------------------------------   DEPLOY
   // contractUSDC            = await deploySCNoUp("USDCoin")
