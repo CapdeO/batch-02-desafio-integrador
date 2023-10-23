@@ -17,4 +17,9 @@ interface IUniSwapV2Router02 {
         uint reserveIn, 
         uint reserveOut
     ) external pure returns (uint amountIn);
+
+    function getAmountsIn(
+        uint amountOut,
+        address[] memory path
+    ) external view returns (uint256[] memory amounts);
 }

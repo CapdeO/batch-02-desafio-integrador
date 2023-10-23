@@ -155,43 +155,6 @@ describe("Testeando PublicSale", () => {
             var balanceAfterBuy = await usdc.balanceOf(owner.address)
             expect(balanceAfterBuy).to.be.at.least(moreUSDC);
         });
-
-        // it("Swap", async () => {
-        //     var { usdc, bbtkn, pair, router, owner } = await loadFixture(loadTest);
-        //     var reserves;
-        //     var cantidad = "2000000000";
-        //     var cantidadRecibir = "5000000000000000000";
-        //     await usdc.mint(owner, cantidad);
-        //     await usdc.approve(router.target, cantidad);
-        //     var path = [usdc.target, bbtkn.target];
-        //     await showBalance(usdc, owner.address)
-        //     await showBalance(bbtkn, owner.address)
-        //     showReserves(pair)
-        //     await router.swapTokensForExactTokens(
-        //         cantidadRecibir,
-        //         cantidad,
-        //         path,
-        //         owner.address,
-        //         90000000000
-        //     );
-        //     console.log('---- SWAP ----')
-        //     await showBalance(usdc, owner.address)
-        //     await showBalance(bbtkn, owner.address)
-        //     showReserves(pair)
-        //     await router.swapTokensForExactTokens(
-        //         cantidadRecibir,
-        //         cantidad,
-        //         path,
-        //         owner.address,
-        //         90000000000
-        //     );
-        //     console.log('---- SWAP ----')
-        //     await showBalance(usdc, owner.address)
-        //     await showBalance(bbtkn, owner.address)
-        //     showReserves(pair)
-
-        // });
-
     });
 
     describe("purchaseWithEtherAndId", () => {
@@ -337,6 +300,44 @@ describe("Testeando PublicSale", () => {
             ).to.be.revertedWith("Contrato sin BBTKN.")
         });
     });
+
+    // describe("Probando pool", () => {
+        // it("Swap", async () => {
+        //     var { usdc, bbtkn, pair, router, owner } = await loadFixture(loadTest);
+        //     var reserves;
+        //     var cantidad = "2000000000";
+        //     var cantidadRecibir = "5000000000000000000";
+        //     await usdc.mint(owner, cantidad);
+        //     await usdc.approve(router.target, cantidad);
+        //     var path = [usdc.target, bbtkn.target];
+        //     await showBalance(usdc, owner.address)
+        //     await showBalance(bbtkn, owner.address)
+        //     showReserves(pair)
+        //     await router.swapTokensForExactTokens(
+        //         cantidadRecibir,
+        //         cantidad,
+        //         path,
+        //         owner.address,
+        //         90000000000
+        //     );
+        //     console.log('---- SWAP ----')
+        //     await showBalance(usdc, owner.address)
+        //     await showBalance(bbtkn, owner.address)
+        //     showReserves(pair)
+        //     await router.swapTokensForExactTokens(
+        //         cantidadRecibir,
+        //         cantidad,
+        //         path,
+        //         owner.address,
+        //         90000000000
+        //     );
+        //     console.log('---- SWAP ----')
+        //     await showBalance(usdc, owner.address)
+        //     await showBalance(bbtkn, owner.address)
+        //     showReserves(pair)
+        // });
+
+    // });
 
     // -----------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------

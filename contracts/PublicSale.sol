@@ -69,11 +69,11 @@ contract PublicSale is
 
     function getAmountIn(uint256 _id) public view NFTChecks(_id, 0, 699) returns(uint256) {
         uint256 tokenAmount = getPriceForId(_id);
-        uint256 reserveIn = _amount(500000);
-        uint256 reserveOut = _amount(1000000);
-        uint256 USDCEstimado = router.getAmountIn(tokenAmount, reserveIn, reserveOut);
-        USDCEstimado = (USDCEstimado * 1005) / 1000; // Aumento un 0.5% para evitar EXCESSIVE_INPUT_AMOUNT
-        USDCEstimado = USDCEstimado / (10 ** (18 - 6));
+        address[] memory path = new address[](2);
+        path[0] = address(tokenUSDC);
+        path[1] = address(tokenBBTKN);
+        uint256[] memory amounts = router.getAmountsIn(tokenAmount, path);
+        uint256 USDCEstimado = amounts[0];
         return USDCEstimado;
     }
 
