@@ -266,7 +266,23 @@ function setUpListeners() {
 
   // buyBack
   var bttn = document.getElementById("buyBackBttn");
+  bttn.addEventListener("click", async () => {
 
+    var id = document.getElementById("buyBackInputId").value;
+
+    try {
+
+      var tx = await nftContract.connect(signer).buyBack(id);
+      var res = await tx.wait();
+      console.log(res.hash);
+
+    } catch (error) {
+      // document.getElementById("approveError").textContent = error;
+      console.log(error)
+      alert(error.reason)
+    }
+
+  });
 
 }
 
@@ -317,7 +333,7 @@ async function setUp() {
 
   setUpEventsContracts();
 
-  //buildMerkleTree();
+  buildMerkleTree();
 
   setUpMetamask();
 }
