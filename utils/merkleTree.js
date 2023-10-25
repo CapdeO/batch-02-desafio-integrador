@@ -29,10 +29,8 @@ function getRootFromMT(data) {
   });
 
   root = merkleTree.getHexRoot();
-  //console.log(root);
 
   return root;
 }
-//getRootFromMT();
 
 module.exports = { getRootFromMT, generateMerkleProof };
