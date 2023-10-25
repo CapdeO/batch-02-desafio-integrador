@@ -9,7 +9,7 @@ import nftTknAbi from "../artifacts/contracts/CuyCollectionNft.sol/CuyCollection
 // SUGERENCIA: vuelve a armar el MerkleTree en frontend
 // Utiliza la libreria buffer
 import buffer from "buffer/";
-import walletAndIds from "../wallets/walletList";
+const walletAndIds = require("../wallets/walletList");
 import { MerkleTree } from "merkletreejs";
 var Buffer = buffer.Buffer;
 var merkleTree;
@@ -23,18 +23,7 @@ function hashToken(tokenId, account) {
     "hex"
   );
 }
-function getMerkleFromMT() {
-  var elementosHasheados = walletAndIds.map(({ id, address }) => {
-    return hashToken(id, address);
-  });
-  merkleTree = new MerkleTree(elementosHasheados, ethers.keccak256, {
-    sortPairs: true,
-  });
 
-  root = merkleTree.getHexRoot();
-  console.log(root);
-  return merkleTree;
-}
 function getRootFromMT(lista) {
 
   var elementosHasheados = lista.map(({ id, address }) => {
@@ -45,25 +34,24 @@ function getRootFromMT(lista) {
   });
 
   root = merkleTree.getHexRoot();
-  //console.log(root);
 
   return root;
 }
+
 function construyendoPruebas(tokenId, account) {
-  // var tokenId = 7;
-  //var account = "0x00b7cda410001f6e52a7f19000b3f767ec8aec7d";
-  merkleTree = getMerkleFromMT();
-  root = getRootFromMT(walletAndIds);
-  var hasheandoElemento = hashToken(tokenId, account);
+  // merkleTree = getMerkleFromMT();
+  // root = getRootFromMT(walletAndIds);
+  // var hasheandoElemento = hashToken(tokenId, account);
+  // var pruebas = merkleTree.getHexProof(hasheandoElemento);
+  // return pruebas;
 
-  var pruebas = merkleTree.getHexProof(hasheandoElemento);
-  //return pruebas;
+  var elementHash = hashToken(tokenId, account); 
+  var proofs = merkleTree.getHexProof(elementHash);
+  return proofs;
+}
 
-  // verificacion off-chain
-  //var pertenece = merkleTree.verify(pruebas, hasheandoElemento, root);
-  //console.log("Pertenece:" + pertenece);
-
-  return pruebas;
+function buildMerkleTree() {
+  root = getRootFromMT(walletAndIds)
 }
 
 

@@ -4,6 +4,7 @@ const { ethers } = require("hardhat");
 const walletAndIds = require("../wallets/walletList");
 
 var merkleTree, root;
+
 function hashToken(tokenId, account) {
   return Buffer.from(
     ethers
