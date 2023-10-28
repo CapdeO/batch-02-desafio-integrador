@@ -90,13 +90,14 @@ async function Goerli() {
   // await verify(addressPublicSaleImpl, "PublicSaleImpl", [])
 
   // -------------------------------------------------------------------------------   SET UP
-  contractBBTKNProxy = await ethers.getContractAt("BBitesToken", addressBBTKNProxy)
+  // contractBBTKNProxy = await ethers.getContractAt("BBitesToken", addressBBTKNProxy)
   // await contractBBTKNProxy.grantRole(MINTER_ROLE, relayerGoerli)
+  contractUSDC       = await ethers.getContractAt("USDCoin", addressUSDC)
 
   // MINTEANDO.. BORRAR !!
-  var addressTest = '0xb9840e6cd6e7200fdeea1348834c61e6af53d6a0'
+  var addressTest = '0xC840F562D9F69b46b4227003E01525CB99344B72'
   var amount = '1000000000000000000000'
-  await contractBBTKNProxy.mint(addressTest, amount)
+  await contractUSDC.mint(addressTest, amount)
 
   // -------------------------------------------------------------------------------   LIQ POOL
   // var [deployer] = await ethers.getSigners()

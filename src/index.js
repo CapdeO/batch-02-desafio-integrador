@@ -102,6 +102,8 @@ function setUpListeners() {
   bttn.addEventListener("click", async function () {
     document.getElementById("approveError").textContent = "";
     var approveInput = document.getElementById("approveInput").value;
+    approveInput = approveInput * (10**18)
+    approveInput = approveInput.toString();
     try {
 
       var tx = await bbitesTknContract.connect(signer).approve(pubSContractAdd, approveInput);
@@ -122,6 +124,8 @@ function setUpListeners() {
   bttn.addEventListener("click", async function () {
     document.getElementById("approveErrorUSDC").textContent = "";
     var approveInput = document.getElementById("approveInputUSDC").value;
+    approveInput = approveInput * (10**6)
+    approveInput = approveInput.toString();
     try {
 
       var tx = await usdcTkContract.connect(signer).approve(pubSContractAdd, approveInput);
@@ -161,6 +165,8 @@ function setUpListeners() {
     document.getElementById("purchaseErrorUSDC").textContent = "";
     var idInput = document.getElementById("purchaseInputUSDC").value;
     var amountIn = document.getElementById("amountInUSDCInput").value;
+    amountIn = amountIn * (10**6)
+    amountIn = amountIn.toString();
     try {
 
       var tx = await pubSContract.connect(signer).purchaseWithUSDC(idInput, amountIn);
@@ -182,7 +188,7 @@ function setUpListeners() {
 
     try {
 
-      var tx = await pubSContract.connect(signer).purchaseWithEtherAndId(idInput, { value: ethers.parseEther("0.001") });
+      var tx = await pubSContract.connect(signer).purchaseWithEtherAndId(idInput, { value: ethers.parseEther("0.01") });
       var res = await tx.wait();
       console.log(res.hash);
 
@@ -229,8 +235,23 @@ function setUpListeners() {
       //document.getElementById("approveErrorUSDC").textContent = error;
       alert(error.reason)
     }
+  });
 
+  // getPriceForIdUSDC
+  var bttn = document.getElementById("getPriceNftByIdUSDCBttn");
+  bttn.addEventListener("click", async function () {
+    var _id = document.getElementById("priceNftIdInputUSDC").value;
 
+    try {
+      var tx = await pubSContract.getAmountIn(_id);
+
+      console.log(tx);
+      document.getElementById("priceNftByIdUSDCText").textContent = ethers.formatUnits(tx, 6);
+
+    } catch (error) {
+      //document.getElementById("approveErrorUSDC").textContent = error;
+      alert(error.reason)
+    }
   });
 
 
@@ -248,9 +269,24 @@ function setUpListeners() {
 
   // safeMintWhiteList
   var bttn = document.getElementById("safeMintWhiteListBttnId");
-  // usar ethers.hexlify porque es un array de bytes
-  // var proofs = document.getElementById("whiteListToInputProofsId").value;
-  // proofs = JSON.parse(proofs).map(ethers.hexlify);
+
+  bttn.addEventListener("click", async function () {
+    document.getElementById("whiteListErrorId").textContent = "";
+    var toInput = document.getElementById("whiteListToInputId").value;
+    var idInput = document.getElementById("whiteListToInputTokenId").value;
+    var proofsInput = document.getElementById("whiteListToInputProofsId").value;
+    proofsInput = JSON.parse(proofsInput).map(ethers.hexlify);
+
+    try {
+      var tx = await nftContract.connect(signer).safeMintWhiteList(toInput, idInput, proofsInput);
+      var res = await tx.wait();
+      console.log(res.hash);
+
+    } catch (error) {
+      console.log(error)
+      alert(error.reason)
+    }
+  });
 
   // buyBack
   var bttn = document.getElementById("buyBackBttn");
@@ -296,16 +332,30 @@ function initSCsMumbai() {
 
 function setUpEventsContracts() {
   var pubSList = document.getElementById("pubSList");
-  // pubSContract - "PurchaseNftWithId"
+  pubSContract.on("PurchaseNftWithId", (account, id) => {
+    var text = pubSList.textContent;
+    pubSList.textContent = `${text} \n El evento purchase fue ejecutado por ${account} para el id ${id}`;
+  });
 
   var bbitesListEl = document.getElementById("bbitesTList");
-  // bbitesCListener - "Transfer"
+  bbitesTknContract.on("Tranfer", (from, to, amount) => {
+    var text = bbitesListEl.textContent;
+    bbitesListEl.textContent = `${text} \n Se han tranferido ${ethers.parseEther(
+      amount
+    )} BBites Tokens desde ${from} hacia ${to} `;
+  });
 
   var nftList = document.getElementById("nftList");
-  // nftCListener - "Transfer"
+  nftContract.on("Tranfer", (from, to, tokenId) => {
+    var text = nftList.textContent;
+    nftList.textContent = `${text} \n Se ha tranferido el token ${tokenId} desde ${from} a ${to} `;
+  });
 
   var burnList = document.getElementById("burnList");
-  // nftCListener - "Burn"
+  nftContract.on("Burn", (account, id) => {
+    var text = burnList.textContent;
+    burnList.textContent = `${text} \n La cuenta ${account} ha quemado el token ${id}`;
+  });
 }
 
 async function setUp() {
