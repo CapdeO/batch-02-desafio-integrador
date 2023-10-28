@@ -1,19 +1,17 @@
 import { Contract, ethers } from "ethers";
 
-
 import usdcTknAbi from "../artifacts/contracts/USDCoin.sol/USDCoin.json";
 import bbitesTokenAbi from "../artifacts/contracts/BBitesToken.sol/BBitesToken.json";
 import publicSaleAbi from "../artifacts/contracts/PublicSale.sol/PublicSale.json";
 import nftTknAbi from "../artifacts/contracts/CuyCollectionNft.sol/CuyCollectionNft.json";
 
-// SUGERENCIA: vuelve a armar el MerkleTree en frontend
-// Utiliza la libreria buffer
 import buffer from "buffer/";
 const walletAndIds = require("../wallets/walletList");
 import { MerkleTree } from "merkletreejs";
 var Buffer = buffer.Buffer;
 var merkleTree;
 var root;
+var isConnected;
 
 function hashToken(tokenId, account) {
   return Buffer.from(
@@ -25,26 +23,17 @@ function hashToken(tokenId, account) {
 }
 
 function getRootFromMT(lista) {
-
   var elementosHasheados = lista.map(({ id, address }) => {
     return hashToken(id, address);
   });
   merkleTree = new MerkleTree(elementosHasheados, ethers.keccak256, {
     sortPairs: true,
   });
-
   root = merkleTree.getHexRoot();
-
   return root;
 }
 
 function construyendoPruebas(tokenId, account) {
-  // merkleTree = getMerkleFromMT();
-  // root = getRootFromMT(walletAndIds);
-  // var hasheandoElemento = hashToken(tokenId, account);
-  // var pruebas = merkleTree.getHexProof(hasheandoElemento);
-  // return pruebas;
-
   var elementHash = hashToken(tokenId, account); 
   var proofs = merkleTree.getHexProof(elementHash);
   return proofs;
@@ -53,7 +42,6 @@ function construyendoPruebas(tokenId, account) {
 function buildMerkleTree() {
   root = getRootFromMT(walletAndIds)
 }
-
 
 var provider, signer, account;
 var usdcTkContract, bbitesTknContract, pubSContract, nftContract;
@@ -72,7 +60,7 @@ async function setUpMetamask() {
       });
       console.log("Billetera metamask", account);
       walletIdEl.innerHTML = account;
-
+      isConnected = true;
       provider = new ethers.BrowserProvider(window.ethereum);
       signer = await provider.getSigner(account);
     }
@@ -83,38 +71,53 @@ function setUpListeners() {
   // USDC Balance - balanceOf
   var bttn = document.getElementById("usdcUpdate");
   bttn.addEventListener("click", async function () {
-    var balance = await usdcTkContract.balanceOf(account);
-    var balanceEl = document.getElementById("usdcBalance");
-    balanceEl.innerHTML = ethers.formatUnits(balance, 6);
+
+    if (isConnected) {
+      var balance = await usdcTkContract.balanceOf(account);
+      var balanceEl = document.getElementById("usdcBalance");
+      balanceEl.innerHTML = ethers.formatUnits(balance, 6);
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
+    }
   });
 
   // Bbites token Balance - balanceOf
   var bttn = document.getElementById("bbitesTknUpdate");
   bttn.addEventListener("click", async function () {
-    var balance = await bbitesTknContract.balanceOf(account);
-    var balanceEl = document.getElementById("bbitesTknBalance");
-    balanceEl.innerHTML = ethers.formatUnits(balance, 18);
+    if(isConnected) {
+      var balance = await bbitesTknContract.balanceOf(account);
+      var balanceEl = document.getElementById("bbitesTknBalance");
+      balanceEl.innerHTML = ethers.formatUnits(balance, 18);
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
+    }
+    
   });
 
   // APPROVE BBTKN
   // bbitesTknContract.approve
   var bttn = document.getElementById("approveButtonBBTkn");
   bttn.addEventListener("click", async function () {
-    document.getElementById("approveError").textContent = "";
-    var approveInput = document.getElementById("approveInput").value;
-    approveInput = approveInput * (10**18)
-    approveInput = approveInput.toString();
-    try {
+    if(isConnected) {
+      document.getElementById("approveError").textContent = "";
+      var approveInput = document.getElementById("approveInput").value;
+      approveInput = approveInput * (10**18)
+      approveInput = approveInput.toString();
+      try {
 
-      var tx = await bbitesTknContract.connect(signer).approve(pubSContractAdd, approveInput);
-      var res = await tx.wait();
-      console.log(res.hash);
+        var tx = await bbitesTknContract.connect(signer).approve(pubSContractAdd, approveInput);
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      // document.getElementById("approveError").textContent = error;
-      console.log(error)
-      alert(error.reason)
+      } catch (error) {
+        // document.getElementById("approveError").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
 
@@ -122,102 +125,126 @@ function setUpListeners() {
   // usdcTkContract.approve
   var bttn = document.getElementById("approveButtonUSDC");
   bttn.addEventListener("click", async function () {
-    document.getElementById("approveErrorUSDC").textContent = "";
-    var approveInput = document.getElementById("approveInputUSDC").value;
-    approveInput = approveInput * (10**6)
-    approveInput = approveInput.toString();
-    try {
+    if(isConnected) {
+      document.getElementById("approveErrorUSDC").textContent = "";
+      var approveInput = document.getElementById("approveInputUSDC").value;
+      approveInput = approveInput * (10**6)
+      approveInput = approveInput.toString();
+      try {
 
-      var tx = await usdcTkContract.connect(signer).approve(pubSContractAdd, approveInput);
-      var res = await tx.wait();
-      console.log(res.hash);
+        var tx = await usdcTkContract.connect(signer).approve(pubSContractAdd, approveInput);
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      // document.getElementById("approveErrorUSDC").textContent = error;
-      console.log(error)
-      alert(error.reason)
+      } catch (error) {
+        // document.getElementById("approveErrorUSDC").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
   // purchaseWithTokens
   var bttn = document.getElementById("purchaseButton");
   bttn.addEventListener("click", async function () {
-    document.getElementById("purchaseError").textContent = "";
-    var idInput = document.getElementById("purchaseInput").value;
-    try {
+    if(isConnected) {
+      document.getElementById("purchaseError").textContent = "";
+      var idInput = document.getElementById("purchaseInput").value;
+      try {
 
-      var allowanceDado = await bbitesTknContract.allowance(signer.address, pubSContractAdd);
-      console.log(allowanceDado);
-      var tx = await pubSContract.connect(signer).purchaseWithTokens(idInput);
-      var res = await tx.wait();
-      console.log(res.hash);
+        var allowanceDado = await bbitesTknContract.allowance(signer.address, pubSContractAdd);
+        console.log(allowanceDado);
+        var tx = await pubSContract.connect(signer).purchaseWithTokens(idInput);
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      //document.getElementById("purchaseError").textContent = error;
-      console.log(error)
-      alert(error.reason)
-
+      } catch (error) {
+        //document.getElementById("purchaseError").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
   // purchaseWithUSDC
   var bttn = document.getElementById("purchaseButtonUSDC");
   bttn.addEventListener("click", async function () {
-    document.getElementById("purchaseErrorUSDC").textContent = "";
-    var idInput = document.getElementById("purchaseInputUSDC").value;
-    var amountIn = document.getElementById("amountInUSDCInput").value;
-    amountIn = amountIn * (10**6)
-    amountIn = amountIn.toString();
-    try {
+    if(isConnected) {
+      document.getElementById("purchaseErrorUSDC").textContent = "";
+      var idInput = document.getElementById("purchaseInputUSDC").value;
+      var amountIn = document.getElementById("amountInUSDCInput").value;
+      amountIn = amountIn * (10**6)
+      amountIn = amountIn.toString();
+      try {
 
-      var tx = await pubSContract.connect(signer).purchaseWithUSDC(idInput, amountIn);
-      var res = await tx.wait();
-      console.log(res.hash);
+        var tx = await pubSContract.connect(signer).purchaseWithUSDC(idInput, amountIn);
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      // document.getElementById("purchaseErrorUSDC").textContent = error;
-      console.log(error)
-      alert(error.reason)
+      } catch (error) {
+        // document.getElementById("purchaseErrorUSDC").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
   // purchaseWithEtherAndId
   var bttn = document.getElementById("purchaseButtonEtherId");
   bttn.addEventListener("click", async function () {
-    document.getElementById("purchaseEtherIdError").textContent = "";
-    var idInput = document.getElementById("purchaseInputEtherId").value;
+    if(isConnected) {
+      document.getElementById("purchaseEtherIdError").textContent = "";
+      var idInput = document.getElementById("purchaseInputEtherId").value;
 
-    try {
+      try {
 
-      var tx = await pubSContract.connect(signer).purchaseWithEtherAndId(idInput, { value: ethers.parseEther("0.01") });
-      var res = await tx.wait();
-      console.log(res.hash);
+        var tx = await pubSContract.connect(signer).purchaseWithEtherAndId(idInput, { value: ethers.parseEther("0.01") });
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      // document.getElementById("purchaseEtherIdError").textContent = error;
-      console.log(error)
-      alert(error.reason)
+      } catch (error) {
+        // document.getElementById("purchaseEtherIdError").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
   // send Ether
   var bttn = document.getElementById("sendEtherButton");
   bttn.addEventListener("click", async function () {
-    document.getElementById("sendEtherError").textContent = "";
+    if(isConnected) {
+      document.getElementById("sendEtherError").textContent = "";
 
-    try {
-      var res = await signer.sendTransaction({
-        to: pubSContract,
-        value: ethers.parseEther("0.001"),
-      });
+      try {
+        var res = await signer.sendTransaction({
+          to: pubSContract,
+          value: ethers.parseEther("0.001"),
+        });
 
-      console.log(res.hash);
+        console.log(res.hash);
 
-    } catch (error) {
-      // document.getElementById("sendEtherError").textContent = error;
-      console.log(error)
-      alert(error.code)
+      } catch (error) {
+        // document.getElementById("sendEtherError").textContent = error;
+        console.log(error)
+        alert(error.code)
 
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
   // getPriceForId
@@ -271,43 +298,46 @@ function setUpListeners() {
   var bttn = document.getElementById("safeMintWhiteListBttnId");
 
   bttn.addEventListener("click", async function () {
-    document.getElementById("whiteListErrorId").textContent = "";
-    var toInput = document.getElementById("whiteListToInputId").value;
-    var idInput = document.getElementById("whiteListToInputTokenId").value;
-    var proofsInput = document.getElementById("whiteListToInputProofsId").value;
-    proofsInput = JSON.parse(proofsInput).map(ethers.hexlify);
+    if(isConnected) {
+      document.getElementById("whiteListErrorId").textContent = "";
+      var toInput = document.getElementById("whiteListToInputId").value;
+      var idInput = document.getElementById("whiteListToInputTokenId").value;
+      var proofsInput = document.getElementById("whiteListToInputProofsId").value;
+      proofsInput = JSON.parse(proofsInput).map(ethers.hexlify);
 
-    try {
-      var tx = await nftContract.connect(signer).safeMintWhiteList(toInput, idInput, proofsInput);
-      var res = await tx.wait();
-      console.log(res.hash);
+      try {
+        var tx = await nftContract.connect(signer).safeMintWhiteList(toInput, idInput, proofsInput);
+        var res = await tx.wait();
+        console.log(res.hash);
 
-    } catch (error) {
-      console.log(error)
-      alert(error.reason)
+      } catch (error) {
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
+    
   });
 
   // buyBack
   var bttn = document.getElementById("buyBackBttn");
   bttn.addEventListener("click", async () => {
-
-    var id = document.getElementById("buyBackInputId").value;
-
-    try {
-
-      var tx = await nftContract.connect(signer).buyBack(id);
-      var res = await tx.wait();
-      console.log(res.hash);
-
-    } catch (error) {
-      // document.getElementById("approveError").textContent = error;
-      console.log(error)
-      alert(error.reason)
+    if(isConnected) {
+      var id = document.getElementById("buyBackInputId").value;
+      try {
+        var tx = await nftContract.connect(signer).buyBack(id);
+        var res = await tx.wait();
+        console.log(res.hash);
+      } catch (error) {
+        // document.getElementById("approveError").textContent = error;
+        console.log(error)
+        alert(error.reason)
+      }
+    } else {
+      alert("Por favor conecta tu billetera Metamask.")
     }
-
   });
-
 }
 
 function initSCsGoerli() {
